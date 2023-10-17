@@ -7,10 +7,25 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
+from flask_bcrypt import Bcrypt
+
+
+app = Flask(__name__)
+
+app.config["JWT_COOKIE_SECURE"] = False
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+app.config["JWT_SECRET_KEY"] = "nelys"  # Change this in your code!
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
 
 #from models import Person
 
@@ -62,6 +77,40 @@ def serve_any_other_file(path):
     response = send_from_directory(static_file_dir, path)
     response.cache_control.max_age = 0 # avoid cache memory
     return response
+
+@app.route('/signup', methods=['POST'])
+def register():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg':'Body must be send'}), 400
+    if 'email' not in body:
+        return jsonify({'msg':'Email must be send'}),400
+    if 'password' not in body:
+        return jsonify({'msg':'Password must be send'}), 400
+    pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
+    new_user = User()
+    new_user.email = body['email']
+    new_user.password = pw_hash
+    new_user.is_active = True
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': f'User with email {body["email"]} has been created'})
+
+@app.route('/login', methods = ['POST'])
+def login():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg':'Body must be send'}), 400
+    if 'email' not in body:
+        return jsonify({'msg':'Email must be send'}),400
+    if 'password' not in body:
+        return jsonify({'msg':'Password must be send'}), 400
+    user = User.query.filter_by(email=body['email']).first()
+    if not bcrypt.check_password_hash(user.password, body['password']):
+        return jsonify({'msg':'Incorrect password'}), 400
+    access_token = create_access_token(identity=user.email)
+    return jsonify({'access token':access_token})
+                        
 
 
 # this only runs if `$ python src/main.py` is executed
