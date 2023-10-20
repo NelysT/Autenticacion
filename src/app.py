@@ -15,25 +15,27 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 
 
-app = Flask(__name__)
 
-app.config["JWT_COOKIE_SECURE"] = False
-app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-app.config["JWT_SECRET_KEY"] = "nelys"  # Change this in your code!
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
-jwt = JWTManager(app)
-bcrypt = Bcrypt(app)
 
 #from models import Person
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
-app.url_map.strict_slashes = False
 
+
+app.url_map.strict_slashes = False
+app.config["JWT_SECRET_KEY"] = "nelys"  # Change this in your code!
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+
+
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
@@ -47,6 +49,7 @@ db.init_app(app)
 
 # Allow CORS requests to this API
 CORS(app)
+CORS(api, supports_credentials=True)
 
 # add the admin
 setup_admin(app)
@@ -96,21 +99,36 @@ def register():
     db.session.commit()
     return jsonify({'message': f'User with email {body["email"]} has been created'})
 
-@app.route('/login', methods = ['POST'])
+
+
+@app.route('/login', methods=['POST'])
 def login():
     body = request.get_json(silent=True)
     if body is None:
-        return jsonify({'msg':'Body must be send'}), 400
+        return jsonify({'Mensaje': 'Body must be send'}), 400
     if 'email' not in body:
-        return jsonify({'msg':'Email must be send'}),400
+        return jsonify({'Mensaje': 'Email must be send'}), 400
     if 'password' not in body:
-        return jsonify({'msg':'Password must be send'}), 400
+        return jsonify({'Mensaje': 'Password must be send'}), 400
+
     user = User.query.filter_by(email=body['email']).first()
-    if not bcrypt.check_password_hash(user.password, body['password']):
-        return jsonify({'msg':'Incorrect password'}), 400
-    access_token = create_access_token(identity=user.email)
-    return jsonify({'access token':access_token})
-                        
+
+    if user is None:
+        return jsonify({'Mensaje': 'El usuario no existe'}), 400
+    if user.password != body['password']:
+        return jsonify({'Mensaje': 'La contraseña no es correcta'}), 400
+
+    token = create_access_token(identity=user.email)
+    return jsonify({'token': token})
+
+@app.route('/private', methods=['GET'])
+@jwt_required()
+def private():
+    email = get_jwt_identity()
+    return jsonify({'Mensaje': 'Metodo privado', 'user': email}), 200
+
+
+
 
 
 # this only runs if `$ python src/main.py` is executed
