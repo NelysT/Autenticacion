@@ -30,7 +30,7 @@ export const Signup = () => {
 	// Si submitted es true, muestra un mensaje de confirmación y redirige después de un breve retraso
 	if (submitted) {
 		setTimeout(() => {
-		navigate("/"); 
+		navigate("/login"); 
 		}, 1000);
 		return (
 			<div className="container">
@@ -44,40 +44,51 @@ export const Signup = () => {
 	
 	return (
 		<div className="container">
-            <div className="lista col-12 col-md-6">
-            <div className="formulario">
+            <div className="login-contenedor">
+			        <div className="login-encabezadoSignup d-flex">
+                <button className="user"><i class="fa-solid fa-user"></i></button>
+                
+				<Link to={"/login"}>
+                  <button className="ingresar"><strong>INGRESAR</strong></button>
+				</Link>
+				      </div>  
+              <div className="login-contenido">
+                <div className="formulario">
                 <form onSubmit={enviarFormulario}>
                 
                 <div className="mb-3">
-                    <label htmlFor="email" className="form-label mb-2">
-                    Email
-                    </label>
+                  
                     <input
                     type="text"
                     id="email"
                     className="form-control"
                     onChange={(e) => setContact({ ...contact, email: e.target.value })}
                     value={contact.email}
+                    placeholder= "Email"
                     />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="phone" className="form-label mb-2">
-                    password
-                    </label>
+                    
                     <input
                     type="text"
                     id="phone"
                     className="form-control"
                     value={contact.password}
                     onChange={(e) => setContact({ ...contact, password: e.target.value })}
+                    placeholder="Password"
                     />
                 </div>
+                <div>
+					<button type="submit" className="btnRegistrar">
+						 Registrar
+					</button>
+					
+				</div>
                 
-                <button type="submit" className="btnSave">
-                    <i className="fa-solid fa-floppy-disk"></i> Register
-                </button>
                 </form>
-            </div>
+            </div> 
+                </div>
+              
             </div>
         </div>
    

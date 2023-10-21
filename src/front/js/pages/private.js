@@ -1,6 +1,7 @@
-import React, { useContext, useEffect } from "react";
-import { Context } from "../store/appContext";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Context } from "../store/appContext";
+import { Link } from "react-router-dom";
 
 
 
@@ -16,18 +17,45 @@ export const Private = () => {
 	return (
 		<div>
 		{token && token != null && token != undefined ? (
-			<div className="text-center mt-5">
-			<h1>Private</h1>
-			<button className="btn btn-danger" onClick={borrar}>Borrar</button> 
-				
+			<div className="login-contenedor">
+			<div className="login-encabezadoSignup d-flex">
+		<button className="user"><i class="fa-solid fa-user"></i></button>
+		
+		
+		  <button className="privada"><strong>AREA PRIVADA</strong></button>
+		
+			  </div> 
+			  <p className="bienvenido">Bienvenido</p> 
+	  
+		<div>
+		<button className="btnBorrar" onClick={borrar}>Borrar</button> 
+			
 		</div>
+		
+		
+	</div>
+
 
 		): (
-			<div>
-				<h1>No estas logueado en la pagina</h1>
-			</div>
-		)} 
+			<div className="login-contenedor">
+			<div className="login-encabezadoSignup d-flex">
+		<button className="user"><i class="fa-solid fa-user"></i></button>
+		
+		
+		  <button className="privada"><strong>AREA PRIVADA</strong></button>
+		
+			  </div> 
+			  <p className="permiso">Necesitas ingresar tus datos para acceder a esta area</p> 
+	  
+		<div>
+		<Link to={"/login"}>
+                  <button className="ingresarPrivada"><strong>INGRESAR</strong></button>
+				</Link>
+		</div>
+		</div>
+		)}
 	</div>
+		
 		
 	)
 };

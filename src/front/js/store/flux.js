@@ -68,7 +68,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 		   }, 
 		
 		loginPrivate: async (body) => {
-			const token = sessionStorage.getItem('jwt-token');
+			const token = sessionStorage.getItem('token');
 	   
 			const resp = await fetch(process.env.BACKEND_URL + "/private", {
 			   method: 'GET',
